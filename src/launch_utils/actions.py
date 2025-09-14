@@ -217,14 +217,14 @@ def get_bag_record_action(
         cmd_args.extend(topics)
     else:
         cmd_args.append('--all')
-    ExecuteProcess(
+    return ExecuteProcess(
         cmd = cmd_args,
         output = 'screen'
     )
 def get_bag_record_action_from_config(config):
     return get_bag_record_action(
         config.get('topics', None),
-        config.get('output_prefix', ''),
+        config.get('output_prefix', None),
         config.get('mcap', True)
     )
 
@@ -243,7 +243,7 @@ def get_bag_rerecord_action(
     if exclude_topics:
         cmd_args.append('--exclude')
         cmd_args.append('|'.join(exclude_topics))
-    ExecuteProcess(
+    return ExecuteProcess(
         cmd = cmd_args,
         output = 'screen'
     )
