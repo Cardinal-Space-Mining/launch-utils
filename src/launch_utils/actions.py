@@ -224,7 +224,7 @@ def get_bag_record_action(
 def get_bag_record_action_from_config(config):
     return get_bag_record_action(
         config.get('topics', None),
-        config.get('output_prefix', None),
+        config.get('output_prefix', 'bag_recordings/bag'),
         config.get('mcap', True)
     )
 
