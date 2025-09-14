@@ -67,7 +67,7 @@ def prune_nulls(data):
 
 def resolve_preset(block: dict, preset_name: str, seen=None) -> dict | None:
     """
-    Resolve a preset in a block, handling inheritance (pragma.derived).
+    Resolve a preset in a block, handling inheritance (pragma:derived).
     Detects circular inheritance.
     """
     if preset_name is None:

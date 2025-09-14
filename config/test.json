@@ -1,10 +1,46 @@
 {
     "pragma:enable_preproc": true,
+
+    "preset":
+    {
+        "pragma:default": null,
+        "client":
+        {
+            "pragma:action_overrides":
+            {
+                "joy_node": "xbox",
+                "robot_status": "enabled",
+                "foxglove_bridge": "test",
+                "foxglove_gui": "local"
+            }
+        },
+        "mocha":
+        {
+            "pragma:action_overrides":
+            {
+                "teleop_control": "enabled",
+                "phoenix6_driver": "enabled"
+            }
+        },
+        "frappe":
+        {
+            "pragma:action_overrides":
+            {
+                "phoenix5_driver": "enabled"
+            }
+        }
+    },
+
     "perception":
     {
-        "pragma:default": "live",
+        "pragma:default": null,
         "live":
         {
+            "pragma:action_overrides":
+            {
+                "pplan_client": "enabled"
+            },
+
             "map_frame_id": "map",
             "odom_frame_id": "odom",
             "base_frame_id": "base_link",
@@ -156,25 +192,33 @@
             "pragma:derived": "live",
             "use_sim_time": true
         },
-        "launch_test":
+        "test":
         {
             "pragma:derived": "live",
             "pragma:action_overrides":
             {
-                "tag_detection": "default",
-                "foxglove_bridge": "live",
-                "robot_tf": "lance"
-            },
+                "foxglove_bridge": "test"
+            }
+        },
+        "debug":
+        {
+            "pragma:derived": "test",
             "pragma:node_options":
             {
-                "remappings": {},
                 "prefix": ["xterm -e gdb -ex run --args"]
             }
+        },
+        "lidar":
+        {
+            "pragma:derived": "test",
+            "base_frame_id": "lidar_link",
+            "exclusion_zones": []
         }
     },
+
     "tag_detection":
     {
-        "pragma:default": "live",
+        "pragma:default": null,
         "live":
         {
             "image_transport": "raw",
@@ -348,9 +392,69 @@
             }
         }
     },
+
+    "pplan_client":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+
+    "multiscan_driver":
+    {
+        "pragma:default": null,
+        "robot":
+        {
+            "pragma:node_options":
+            {
+                "remappings":
+                {
+                    "lidar_scan": "/multiscan/lidar_scan",
+                    "lidar_imu": "/multiscan/imu"
+                }
+            },
+
+            "lidar_frame": "lidar_link",
+            "lidar_hostname": "10.11.11.3",
+            "lidar_udp_port": 2115,
+            "sopas_tcp_port": 2111,
+            "use_msgpack": false,
+            "use_cola_binary": false,
+            "udp_reset_timeout": 2.0,
+            "udp_receive_timeout": 1.0,
+            "sopas_read_timeout": 3.0,
+            "error_restart_timeout": 3.0,
+            "max_segment_buffers": 3
+        }
+    },
+
+
+
+    "teleop_control":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+    "phoenix5_driver":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+    "phoenix6_driver":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+    "robot_status":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+
+
+
     "foxglove_bridge":
     {
-        "pragma:default": "live",
+        "pragma:default": null,
         "test":
         {
             "port": 8765,
@@ -425,44 +529,28 @@
             ]
         }
     },
-    "bag_play":
-    {
-        "pragma:default": "test",
-        "test":
-        {
-            "topics": [
-                "/multiscan/lidar_scan",
-                "/multiscan/imu"
-            ],
-            "start_paused": true,
-            "loop": false,
-            "remappings": {}
-        },
-        "with_tf":
-        {
-            "topics": [
-                "/multiscan/lidar_scan",
-                "/multiscan/imu",
-                "/tf",
-                "/tf_static"
-            ]
-        }
-    },
-    "bag_record":
+    "foxglove_gui":
     {
         "pragma:default": null,
-        "sensor_data":
+        "local":
         {
-
+            "connection": "localhost:8765",
+            "use_xdg": true
         },
-        "telemetry":
+        "mocha":
         {
-            
+            "connection": "mochapanda.local:8765",
+            "use_xdg": true
         }
+    },
+    "joy_node":
+    {
+        "pragma:default": null,
+        "xbox": {}
     },
     "robot_tf":
     {
-        "pragma:default": "lance",
+        "pragma:default": null,
         "lance":
         {
             "robot_description":
@@ -536,12 +624,79 @@
             }
         }
     },
-    "joy_node":
+    "bag_play":
+    {
+        "pragma:default": "lidar",
+        "lidar":
+        {
+            "topics": [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu"
+            ],
+            "start_paused": true,
+            "loop": false,
+            "remappings": {}
+        },
+        "lidar_with_tf":
+        {
+            "topics": [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+                "/tf",
+                "/tf_static"
+            ]
+        }
+    },
+    "bag_record":
     {
         "pragma:default": null,
-        "xbox":
+        "all":
         {
+            "start_paused": true,
+            "loop": false
+        },
+        "sensor_data":
+        {
+            "pragam:derived": "all",
+            "topics": [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+                "/tf",
+                "/tf_static"
+            ]
+        },
+        "telemetry":
+        {
+            "pragma:derived": "all",
+            "topics": [
+                "/joy",
+                "/lance/watchdog_status",
+                "/lance/control_level",
+                "/lance/mining_status",
+                "/lance/offload_status",
 
+                "/lance/track_left/ctrl",
+                "/lance/track_left/faults",
+                "/lance/track_left/info",
+
+                "/lance/track_right/ctrl",
+                "/lance/track_right/faults",
+                "/lance/track_right/info",
+
+                "/lance/trencher/ctrl",
+                "/lance/trencher/faults",
+                "/lance/trencher/info",
+
+                "/lance/hopper_belt/ctrl",
+                "/lance/hopper_belt/faults",
+                "/lance/hopper_belt/info",
+
+                "/lance/hopper_act/ctrl",
+                "/lance/hopper_act/faults",
+                "/lance/hopper_act/info",
+
+                "/rosout"
+            ]
         }
     }
 }
