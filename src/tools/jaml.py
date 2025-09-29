@@ -8,7 +8,7 @@ root.withdraw()
 
 yaml_file = filedialog.askopenfilename(
     title = 'Select a file',
-    filetypes = [("Text files", "*.csv"), ("All files", "*.*")] )
+    filetypes = [("YAML files", "*.yaml"), ("All files", "*.*")] )
 
 print(f"Attempting to load file '{yaml_file}'")
 
