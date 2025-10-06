@@ -175,6 +175,7 @@ def get_bag_play_action(
         bag : str,
         topics : list = [],
         paused : bool = True,
+        start_time: float = None,
         loop : bool = False,
         remappings : dict = {} ):
     cmd_args = ['ros2', 'bag', 'play', '--clock', '10', bag]
@@ -183,6 +184,9 @@ def get_bag_play_action(
         cmd_args.extend(topics)
     if paused:
         cmd_args.append('--start-paused')
+    if start_time is not None:
+        cmd_args.append('--start-offset')
+        cmd_args.append(str(start_time))
     if loop:
         cmd_args.append('--loop')
     if remappings:
@@ -199,6 +203,7 @@ def get_bag_play_action_from_config(bag, config):
         bag,
         config.get('topics', []),
         config.get('start_paused', True),
+        config.get('start_time', None),
         config.get('loop', False),
         config.get('remappings', {})
     )
