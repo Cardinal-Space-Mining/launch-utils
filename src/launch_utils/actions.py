@@ -108,6 +108,14 @@ class NodeAction:
         Note that any provided `kwargs` may be overridden by the internal options if
         there are conflicting keys.
         '''
+
+        remaps = list(self.remappings.items())
+        if 'remappings' in kwargs:
+            remaps.extend(kwargs.pop('remappings'))
+        params = [self.get_flattened_params()]
+        if 'parameters' in kwargs:
+            params.extend(kwargs.pop('parameters'))
+
         return Node(
             package = package,
             executable = executable,
