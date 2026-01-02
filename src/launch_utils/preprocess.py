@@ -1,6 +1,6 @@
 '''
 /*******************************************************************************
-*   Copyright (C) 2025 Cardinal Space Mining Club                              *
+*   Copyright (C) 2025-2026 Cardinal Space Mining Club                         *
 *                                                                              *
 *                                 ;xxxxxxx:                                    *
 *                                ;$$$$$$$$$       ...::..                      *
