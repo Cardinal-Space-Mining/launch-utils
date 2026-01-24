@@ -9,12 +9,11 @@ This repo provides a framework for launching large ROS2 projects dynamically and
 - Dynamic API to support highly customized routines/use cases
 
 ## How It Works
-<details>
-<summary>Click to show!</summary>
-At the heart of the utility is a configuration file, which is defined in JSON with special marker tags which allow for preprocessing. The general structure goes as follows:
+<details> <summary>Click to show!</summary>
+At the heart of the utility is a configuration file defined in JSON, augmented with special pragma tags that enable preprocessing. The system is designed to be declarative, composable, and override-friendly, allowing complex runtime configurations to be expressed compactly. The general structure is as follows:
 
 ### 1. Actions
-Actions are simply JSON objects defined inside the highest level unnamed JSON object. For example:
+Actions are JSON objects defined inside the top-level (unnamed) JSON object. For example:
 ```json
 {
     "pragma:enable_preproc": true,
@@ -28,10 +27,14 @@ Actions are simply JSON objects defined inside the highest level unnamed JSON ob
     }
 }
 ```
-Generally speaking, an action represents a process/routine/action that can occur, which either requires a configuration to run or can be enabled/disabled. An obvious example of this would be a ROS node, which can be run and configured with params, remappings, etc.
+Each action represents a configurable process, routine, or capability that can be enabled, disabled, or parameterized. A common example would be a ROS node that can be launched with different parameters, remappings, or runtime behavior.
 
-### 2. Presets/Basic Preprocessing
-Inside each action is a variable number of JSON objects which represent different configuration presets. The idea here is that a given action can be configured with any of it's predefined presets, or **disabled by configuring it with no preset**. A default preset can be defined using the special `pragma:default` tag, which is used by the preprocessor in case no external mapping is defined. Consider the following example:
+### 2. Presets / Basic Preprocessing
+Each action contains one or more presets, which are named JSON objects describing a complete configuration for that action.
+
+An action is configured by selecting exactly one preset, or disabled entirely by selecting no preset. A default preset may be defined using the special `pragma:default` tag, which is used when no external override is provided.
+
+Example:
 ```json
 {
     "pragma:enable_preproc": true,
@@ -69,9 +72,11 @@ The primary objective of the preprocessor is to map each action to a single pres
 }
 ```
 Note how `action1` obtained the contents of `preset1` (it's default), and `action2` was removed entirely since it's default preset was set to `null`.
+### 3. Preset Derivation (Inheritance)
+Presets can inherit from one another using the `pragma:derived` tag. This allows new presets to be created by selectively overriding an existing base configuration instead of redefining everything.
 
-### 3. Preset Derivation
-Presets are very powerful on their own, but get clunky when you have to redefine every single value within them for each individual preset. This is where inheritance comes in. A preset can be "derived" from another preset using the `pragma:derived` tag, in which case the preprocessor implements the following behavior:
+When a preset derives from another, the following rules apply:
+
 - The parent preset is **fully copied.**
 - The child preset is **merged into the parent recursively.**
 - Values in the child override the parent's values.
@@ -121,7 +126,7 @@ Consider the following:
     }
 }
 ```
-Preprocessed output when `preset1`is selected would look like:
+Preprocessed output when `preset1` is selected would look like:
 ```json
 {
     "action1":
@@ -181,9 +186,17 @@ And finally, `preset3`:
     }
 }
 ```
-
 ### 4. Action Dependencies
-To allow multiple actions to be reconfigured using a single preset override, the preprocessor also handles basic dependency management. Each config may define a `pragma:action_overrides` block which specifies an additional layer of default presets for other actions. These overrides have higher priority than each action's singly defined default, but lower priority than externally specified overrides. The preprocessor also handles these in a single pass, so actions that are resolved first will override later ones, and won't be configured according to later actions' overrides if a cyclical reference is introduced. Consider the following:
+To allow a single preset selection to influence multiple actions, presets may define a `pragma:action_overrides` block. This specifies additional default preset selections for other actions.
+
+Override precedence:
+1. External (CLI / API) overrides
+2. `pragma:action_overrides`
+3. Each action’s own `pragma:default`
+
+Overrides are applied in a single pass. If an action has already been resolved, later overrides targeting it are ignored, preventing cyclical dependency issues.
+
+Example:
 ```json
 {
     "pragma:enable_preproc": true,
@@ -197,31 +210,19 @@ To allow multiple actions to be reconfigured using a single preset override, the
                 "action2": "preset2"
             },
             "value1": "x"
-        },
-        "preset2":
-        {
-            "value1": "y"
         }
     },
     "action2":
     {
         "pragma:default": null,
-        "preset1":
-        {
-            "value1": "z"
-        },
         "preset2":
         {
-            "pragma:action_overrides":
-            {
-                "action1": "preset1"
-            },
             "value1": "w"
         }
     }
 }
 ```
-Which would be resolved as:
+Resolved output:
 ```json
 {
     "action1":
@@ -234,24 +235,128 @@ Which would be resolved as:
     }
 }
 ```
-Note how `action2.preset2`'s override of `action1` are ignored since `action1` has already been resolved when that block is read.
+Note how `action2.preset2`'s override of `action1` is ignored since `action1` has already been resolved when that block is read.
 
-### 5. Additional Config Details
-Along with the above preprocessing behavior, the following is also important to note:
-1. No preprocessing will occur unless the `"pragma:enable_preproc": true` assignment if found in the base scope (alongside the actions). This is to guard against situations where multiple preprocessing stages exist due to package usage constraints, and the config should only be preprocessed once.
-2. The `pragma:node_options` block may be provided inside an action preset to further control the ROS2 launch `Node` object (python). All assignments are read/passed as kwargs except `"remappings"`, which are converted to a list of tuples for convenience. This block only gets used if the provided `NodeAction` class (see [actions.py](src/launch_utils/actions.py)) is used to extract and format the launch object using an action config. As an example, if you want to make a preset to debug a C++ node, you could do:
+<!-- ### 5. Global Constants and Value Resolution
+The configuration may define a top-level `pragma:constants` block. Constants are resolved once, globally, and may be referenced from any preset.
+
 ```json
-"debug":
 {
-    "pragma:derived": "presetX",
-    "pragma:node_options":
+    "pragma:constants":
     {
-        "prefix": ["xterm -e gdb -ex run --args"]
+        "image_width": 640,
+        "image_height": 480,
+        "area": "${{ image_width * image_height }}"
+    }
+}
+```
+Constants can be used in presets via:
+
+- Value References
+    ```json
+    "width": "${image_width}"
+    ````
+
+- Expressions
+    ```json
+    "buffer_size": "${{ area / 2 }}"
+    ```
+
+Expressions are evaluated safely and may reference:
+
+- Constants
+- Previously resolved values
+- A small whitelist of math helpers (min, max, abs, math)
+
+References and expressions may be nested arbitrarily and are resolved after preset inheritance. -->
+
+### 5. File Imports
+The special block `pragma:import` may be included, which specifies local or absolute filepaths to additional json config files. These are recursively loaded and merged with the main json blob before any preprocessing is done.
+
+When merging, files loaded earlier always take precedence which disallows cyclical imports and means that value conflicts for a common key favor the value of first occurance.
+
+Example:
+```json
+{
+    // a.json
+
+    "pragma:enable_preproc": true,
+    "pragma:import": ["b.json"],
+
+    "action1":
+    {
+        "pragma:default": "preset1",
+        "preset1":
+        {
+            "value1": "x"
+        },
+        "preset2":
+        {
+            "value1": 7
+        }
+    }
+}
+
+{
+    // b.json
+    "action1":
+    {
+        "pragma:default": "preset2",
+        "preset1":
+        {
+            "value1": "y",
+            "value2": "z"
+        },
+        "preset3":
+        {
+            "value1": 8
+        }
+    },
+    "action2":
+    {
+        "pragma:default": "preset1",
+        "preset1":
+        {
+            "value1": "w"
+        }
+    }
+}
+```
+Result:
+```json
+{
+    "action1":
+    {
+        "value1": "x",
+        "value2": "z"
+    },
+    "action2":
+    {
+        "value1": "w"
     }
 }
 ```
 
-### 6. Launch Args
+### 6. Additional Config Details
+1. Preprocessing only occurs if `"pragma:enable_preproc": true` is set at the top level. This prevents accidental multiple preprocessing passes.
+2. Keys set to null at any level are pruned from the final result.
+3. Assigning an empty object {} overrides a dictionary without removing it.
+4. Assigning a partial dictionary merges recursively.
+5. The optional `pragma:node_options` block may be provided inside a preset to configure ROS2 Node launch options. All entries are passed as keyword arguments, except `"remappings"`, which are converted into a list of tuples.
+
+    Example debug preset:
+    ```json
+    "debug":
+    {
+        "pragma:derived": "presetX",
+        "pragma:node_options":
+        {
+            "prefix": ["xterm -e gdb -ex run --args"]
+        }
+    }
+    ```
+
+### 7. Launch Arguments
 A config file alone will only ever be preprocessed a single way, so we use additional arguments to reassign presets to each action. Using the python API, args are passed as a dict of `action : preset` key-value pairs, which get passed to the preprocessor when resolving a config file. Remapping can additionally be exposed to the CLI using the provided parser, which takes launch args in the format `key:=value` and exports a dictionary, which is then already in the correct format for the preprocessor to use.
 
 The best way to see this in action is to take a look at the [example launchfile](launch/test.launch.py), although if correctly implemented, allows for the following usage:

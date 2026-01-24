@@ -41,6 +41,7 @@
 
 import os
 import re
+import copy
 import json
 import netifaces
 
@@ -62,8 +63,8 @@ def try_load_json(json_path, default_json_path = ''):
     Attempt to load a json if the path is valid, otherwise fallback to the default.
     If both are invalid, or if parsing fails, a `RuntimeError` is thrown.
     '''
-    if not json_path:
-        if not default_json_path:
+    if not json_path or not os.path.exists(json_path):
+        if not default_json_path or not os.path.exists(default_json_path):
             raise RuntimeError('No JSON file provided.')
         json_path = default_json_path
     try:
@@ -71,9 +72,46 @@ def try_load_json(json_path, default_json_path = ''):
     except Exception as e:
         raise RuntimeError(f"JSON file '{json_path}' does not exist or could not be read : {e}")
     try:
-        return json.loads(json_data)
+        return json.loads(json_data), json_path
     except Exception as e:
         raise RuntimeError(f"Failed to load json data from file '{json_path}' : {e}")
+
+def dict_deep_merge_into(primary : dict, secondary : dict):
+    for k, v in secondary.items():
+        if k not in primary:
+            primary[k] = v
+        elif isinstance(primary[k], dict) and isinstance(v, dict):
+            dict_deep_merge_into(primary[k], v)
+
+def resolve_json_imports(json_data, json_path):
+    '''
+    Attempt to load any paths under in the 'pragma:import' key and merge
+    their data into the included dict.
+    '''
+    IMPORT_TAG = 'pragma:import'
+    real_json_path = os.path.realpath(json_path)
+    base_path = os.path.dirname(real_json_path)
+    queue = set(json_data.pop(IMPORT_TAG, []))
+    finished = { real_json_path }
+    result = copy.copy(json_data)
+    while len(queue):
+        dep = queue.pop()
+        full_path = os.path.join(base_path, dep)
+        target = os.path.realpath((
+            full_path if os.path.exists(full_path) else
+            dep if os.path.exists(dep) else
+            None))
+        if target not in finished:
+            try:
+                block, _ = try_load_json(target)
+                finished.add(target)
+                queue.update(block.pop(IMPORT_TAG, []))
+                dict_deep_merge_into(result, block)
+            except Exception as e:
+                print(e)
+                continue
+
+    return result
 
 def try_load_json_from_args(launch_args, default_json_path = ''):
     '''
@@ -82,8 +120,10 @@ def try_load_json_from_args(launch_args, default_json_path = ''):
     options are valid.
     '''
     json_data = launch_args.get('json_data', None)
+    json_path = launch_args.get('json_path', default_json_path)
     if not json_data:
-        json_data = try_load_json(launch_args.get('json_path', ''), default_json_path)
+        json_data, json_path = try_load_json(json_path, default_json_path)
+    json_data = resolve_json_imports(json_data, json_path)
     return json_data if json_data else {}
 
 def flatten_dict(d, parent_key='', sep='.'):
