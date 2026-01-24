@@ -1,0 +1,58 @@
+{
+    "multiscan_driver":
+    {
+        "pragma:default": null,
+        "robot":
+        {
+            "pragma:node_options":
+            {
+                "remappings":
+                {
+                    "lidar_scan": "/multiscan/lidar_scan",
+                    "lidar_imu": "/multiscan/imu"
+                }
+            },
+
+            "lidar_frame": "lidar_link",
+            "lidar_hostname": "10.11.11.3",
+            "lidar_udp_port": 2115,
+            "sopas_tcp_port": 2111,
+            "use_msgpack": false,
+            "use_cola_binary": false,
+            "udp_reset_timeout": 2.0,
+            "udp_receive_timeout": 1.0,
+            "sopas_read_timeout": 3.0,
+            "error_restart_timeout": 3.0,
+            "max_segment_buffers": 3
+        }
+    },
+
+
+
+    "teleop_control":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+    "phoenix5_driver":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+    "phoenix6_driver":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+    "robot_status":
+    {
+        "pragma:default": null,
+        "enabled": {}
+    },
+
+    "joy_node":
+    {
+        "pragma:default": null,
+        "xbox": {}
+    }
+}

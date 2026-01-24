@@ -1,0 +1,77 @@
+{
+    "bag_play":
+    {
+        "pragma:default": "lidar",
+        "lidar":
+        {
+            "topics": [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu"
+            ],
+            "start_paused": true,
+            "loop": false,
+            "remappings": {}
+        },
+        "lidar_with_tf":
+        {
+            "topics": [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+                "/tf",
+                "/tf_static"
+            ]
+        }
+    },
+    "bag_record":
+    {
+        "pragma:default": null,
+        "all":
+        {
+            "start_paused": true,
+            "loop": false
+        },
+        "sensor_data":
+        {
+            "pragam:derived": "all",
+            "topics": [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+                "/tf",
+                "/tf_static"
+            ]
+        },
+        "telemetry":
+        {
+            "pragma:derived": "all",
+            "topics": [
+                "/joy",
+                "/lance/watchdog_status",
+                "/lance/control_level",
+                "/lance/mining_status",
+                "/lance/offload_status",
+
+                "/lance/track_left/ctrl",
+                "/lance/track_left/faults",
+                "/lance/track_left/info",
+
+                "/lance/track_right/ctrl",
+                "/lance/track_right/faults",
+                "/lance/track_right/info",
+
+                "/lance/trencher/ctrl",
+                "/lance/trencher/faults",
+                "/lance/trencher/info",
+
+                "/lance/hopper_belt/ctrl",
+                "/lance/hopper_belt/faults",
+                "/lance/hopper_belt/info",
+
+                "/lance/hopper_act/ctrl",
+                "/lance/hopper_act/faults",
+                "/lance/hopper_act/info",
+
+                "/rosout"
+            ]
+        }
+    }
+}
