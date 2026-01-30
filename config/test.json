@@ -9,6 +9,20 @@
         "tag_detection.json",
         "tf.json"
     ],
+    "pragma:constants":
+    {
+        "ARENA_FRAME_ID": "map",
+        "ODOM_FRAME_ID": "odom",
+        "ROBOT_FRAME_ID": "base_link",
+        "LIDAR_FRAME_ID": "lidar_link",
+
+        "LIDAR_HOSTNAME": "10.11.11.3",
+        "ROBOT_HOSTNAME": "10.11.11.10",
+        "CLIENT_HOSTNAME": "10.11.11.8",
+
+        "LIDAR_SCAN_TOPIC": "/multiscan/lidar_scan",
+        "LIDAR_IMU_TOPIC": "/multiscan/imu"
+    },
 
     "preset":
     {

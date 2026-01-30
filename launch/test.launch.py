@@ -21,9 +21,9 @@ def launch(context, *args, **kwargs):
     # pprint(json_data)
     # print("---------------------------------------------")
     pp_config = preprocess_launch_json(json_data, launch_args)
-    # print("---------------------------------------------")
-    # pprint(pp_config)
-    # print("---------------------------------------------")
+    print("---------------------------------------------")
+    pprint(pp_config)
+    print("---------------------------------------------")
     return get_util_actions(pp_config, launch_args)
     # return None
 
