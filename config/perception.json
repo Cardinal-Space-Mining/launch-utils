@@ -9,17 +9,17 @@
                 "pplan_client": "enabled"
             },
 
-            "map_frame_id": "map",
-            "odom_frame_id": "odom",
-            "base_frame_id": "base_link",
-            "scan_topic": "/multiscan/lidar_scan",
-            "imu_topic": "/multiscan/imu",
+            "map_frame_id": "${ ARENA_FRAME_ID }",
+            "odom_frame_id": "${ ODOM_FRAME_ID }",
+            "base_frame_id": "${ ROBOT_FRAME_ID }",
+            "scan_topic": "${ LIDAR_SCAN_TOPIC }",
+            "imu_topic": "${ LIDAR_IMU_TOPIC }",
             "tag_usage_mode": 0,
             "metrics_pub_freq": 10.0,
             "exclusion_zones" :
             [
                 {
-                    "frame_id" : "base_link",
+                    "frame_id" : "${ ROBOT_FRAME_ID }",
                     "min": [ -0.405, -0.6, 0.0 ],
                     "max": [ 0.735, 0.6, 0.959 ]
                 }
@@ -179,7 +179,7 @@
         "lidar":
         {
             "pragma:derived": "test",
-            "base_frame_id": "lidar_link",
+            "base_frame_id": "${ LIDAR_FRAME_ID }",
             "exclusion_zones": []
         }
     },

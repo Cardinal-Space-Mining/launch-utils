@@ -13,8 +13,8 @@
                 }
             },
 
-            "lidar_frame": "lidar_link",
-            "lidar_hostname": "10.11.11.3",
+            "lidar_frame": "${ LIDAR_FRAME_ID }",
+            "lidar_hostname": "${ LIDAR_HOSTNAME }",
             "lidar_udp_port": 2115,
             "sopas_tcp_port": 2111,
             "use_msgpack": false,

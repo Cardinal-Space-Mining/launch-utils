@@ -55,7 +55,7 @@ import re
 MARKER_TAG = 'pragma:enable_preproc'
 DEFAULT_TAG = 'pragma:default'
 DERIVED_TAG = 'pragma:derived'
-# CONSTANTS_TAG = 'pragma:constants'
+CONSTANTS_TAG = 'pragma:constants'
 PRESET_OVERRIDE_TAG = 'pragma:action_overrides'
 
 
@@ -192,205 +192,37 @@ def extract_linked_overrides(resolved_block: dict, overrides: dict) -> None:
 
 
 # # =========================
-# # Value resolution (refs + expressions)
+# # Value resolution
 # # =========================
 
-# # Regex for references and expressions
-# REF_RE = re.compile(r'^\$\{\s*([^}]+?)\s*\}$')
-# EXPR_RE = re.compile(r'^\$\{\{\s*(.+?)\s*\}\}$')
+REF_RE = re.compile(r'^\$\{\s*([^}]+?)\s*\}$')
 
-# # Allowed functions for safe_eval
-# ALLOWED_GLOBALS = {
-#     "math": math,
-#     "min": min,
-#     "max": max,
-#     "abs": abs,
-# }
+def resolve_constant(link: str, constants: dict):
+    parts = link.split('.')
+    scope = constants
+    for part in parts[:-1]:
+        if isinstance(scope, dict) and part in scope:
+            scope = scope[part]
+        else:
+            return None
+    if isinstance(scope, dict) and parts[-1] in scope:
+        return copy.deepcopy(scope[parts[-1]])
+    else:
+        return None
 
-# class DAGResolverError(Exception):
-#     pass
+def resolve_constants(elem, constants: dict):
+    if isinstance(elem, dict):
+        for k, v in elem.items():
+            if resolved := resolve_constants(v, constants):
+                elem[k] = resolved
+    elif isinstance(elem, list):
+        for i in range(len(elem)):
+            if resolved := resolve_constants(elem[i], constants):
+                elem[i] = resolved
+    elif isinstance(elem, str) and (match := REF_RE.search(elem)):
+        return resolve_constant(match.group(1), constants)
 
-# def safe_eval(expr: str, context: dict):
-#     """Safely evaluate a restricted Python expression."""
-#     tree = ast.parse(expr, mode='eval')
-#     for node in ast.walk(tree):
-#         if not isinstance(node, (
-#             ast.Expression, ast.BinOp, ast.UnaryOp, ast.Num, ast.Constant,
-#             ast.Name, ast.Load, ast.Call, ast.Attribute,
-#             ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Pow, ast.USub
-#         )):
-#             raise ValueError(f"Disallowed expression: {expr}")
-
-#     return eval(
-#         compile(tree, "<expr>", "eval"),
-#         {"__builtins__": {}},
-#         {**ALLOWED_GLOBALS, **context}
-#     )
-
-# def walk_leaves(data, prefix=()):
-#     """Yield all leaf paths and values in a nested dict/list structure."""
-#     if isinstance(data, dict):
-#         for k, v in data.items():
-#             yield from walk_leaves(v, prefix + (k,))
-#     elif isinstance(data, list):
-#         for i, v in enumerate(data):
-#             yield from walk_leaves(v, prefix + (i,))
-#     else:
-#         yield prefix, data
-
-# def get_by_path(data, path):
-#     cur = data
-#     for p in path:
-#         cur = cur[p]
-#     return cur
-
-# def set_by_path(data, path, value):
-#     cur = data
-#     for p in path[:-1]:
-#         cur = cur[p]
-#     cur[path[-1]] = value
-
-# def resolve_relative_path(name: str, base_path: tuple, data: dict, constants: dict):
-#     """
-#     Resolve a reference name relative to a nested path.
-#     - Fully qualified names (with '.') are returned as-is
-#     - Unqualified names climb the parent chain
-#     - Checks the constants block if not found in the config
-#     """
-#     parts = tuple(name.split('.'))
-#     if len(parts) > 1:
-#         return parts  # fully qualified
-
-#     # climb parent scopes
-#     for i in range(len(base_path), -1, -1):
-#         candidate = base_path[:i] + parts
-#         try:
-#             get_by_path(data, candidate)
-#             return candidate
-#         except KeyError:
-#             continue
-
-#     # check constants at top-level
-#     if name in constants:
-#         return (name,)
-
-#     raise KeyError(f"Cannot resolve relative reference '{name}' from {base_path}")
-
-# def extract_dependencies(value: str, base_path: tuple, data: dict, constants: dict):
-#     deps = set()
-
-#     # simple references ${var}
-#     for ref in REF_RE.findall(value):
-#         dep_path = resolve_relative_path(ref.strip(), base_path, data, constants)
-#         deps.add(dep_path)
-
-#     # expressions ${{ expr }}
-#     for expr in EXPR_RE.findall(value):
-#         tree = ast.parse(expr, mode="eval")
-#         for node in ast.walk(tree):
-#             if isinstance(node, ast.Name):
-#                 dep_path = resolve_relative_path(node.id, base_path, data, constants)
-#                 deps.add(dep_path)
-#             elif isinstance(node, ast.Attribute):
-#                 parts = []
-#                 n = node
-#                 while isinstance(n, ast.Attribute):
-#                     parts.append(n.attr)
-#                     n = n.value
-#                 if isinstance(n, ast.Name):
-#                     parts.append(n.id)
-#                     dep_path = resolve_relative_path(".".join(reversed(parts)), base_path, data, constants)
-#                     deps.add(dep_path)
-#     return deps
-
-# def build_dependency_graph(data: dict, constants: dict):
-#     """
-#     Build DAG of dependencies: {node_path: set(dep_paths)}
-#     Only includes nodes that are references or expressions.
-#     """
-#     graph = defaultdict(set)
-#     nodes = {}
-
-#     for path, value in walk_leaves(data):
-#         if not isinstance(value, str):
-#             continue
-#         if not (REF_RE.search(value) or EXPR_RE.search(value)):
-#             continue
-#         nodes[path] = value
-#         base_path = path[:-1]
-#         deps = extract_dependencies(value, base_path, data, constants)
-#         graph[path].update(deps)
-
-#     return graph, nodes
-
-# def topo_sort(graph):
-#     """
-#     Perform topological sort on the dependency graph.
-#     Raises DAGResolverError if a cycle is detected.
-#     """
-#     in_degree = defaultdict(int)
-#     for node, deps in graph.items():
-#         for dep in deps:
-#             in_degree[dep] += 1
-
-#     queue = deque(node for node in graph if in_degree[node] == 0)
-#     resolved = []
-
-#     while queue:
-#         node = queue.popleft()
-#         resolved.append(node)
-#         for n in graph:
-#             if node in graph[n]:
-#                 in_degree[n] -= 1
-#                 if in_degree[n] == 0:
-#                     queue.append(n)
-
-#     if len(resolved) != len(graph):
-#         raise DAGResolverError("Circular or unresolvable dependencies detected")
-#     return resolved
-
-# def resolve_all_values_dag(data: dict, constants: dict):
-#     """
-#     Resolve all string references and expressions in nested dict/list using DAG.
-#     Returns a resolved copy of data.
-#     """
-#     data = copy.deepcopy(data)
-#     constants = copy.deepcopy(constants)
-
-#     graph, nodes = build_dependency_graph(data, constants)
-#     if not graph:
-#         return data  # nothing to resolve
-
-#     sorted_nodes = topo_sort(graph)
-
-#     # context combines constants + current resolved data
-#     context = {**constants, **data}
-
-#     for path in sorted_nodes:
-#         value = nodes[path]
-#         # evaluate expressions
-#         m_expr = EXPR_RE.match(value)
-#         m_ref = REF_RE.match(value)
-
-#         if m_expr:
-#             expr = m_expr.group(1)
-#             resolved = safe_eval(expr, context)
-#         elif m_ref:
-#             ref_path = resolve_relative_path(m_ref.group(1).strip(), path[:-1], data, constants)
-#             resolved = get_by_path(context, ref_path)
-#         else:
-#             raise DAGResolverError(f"Unresolvable value at {path}: {value}")
-
-#         set_by_path(data, path, resolved)
-#         # update context for subsequent evaluations
-#         cur = context
-#         for p in path[:-1]:
-#             if p not in cur:
-#                 cur[p] = {}
-#             cur = cur[p]
-#         cur[path[-1]] = resolved
-
-#     return data
+    return None
 
 
 # =========================
@@ -410,7 +242,7 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
     overrides = copy.deepcopy(overrides) if overrides else {}
     result = {}
 
-    # constants = config.pop(CONSTANTS_TAG, {})
+    constants = config.pop(CONSTANTS_TAG, {})
 
     for action, block in config.items():
         if not isinstance(block, dict) or action.startswith('pragma:'):
@@ -427,7 +259,7 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
         resolved = resolve_preset(block, chosen_preset)
         if resolved is not None:
             extract_linked_overrides(resolved, overrides)
-            # resolved = resolve_all_values_dag(resolved, constants)
+            resolve_constants(resolved, constants)
 
             result[action] = prune_nulls(resolved)
             print(f"[LAUNCH PREPROC]: Configured action '{action}' with preset '{chosen_preset}'")
