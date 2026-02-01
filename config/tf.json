@@ -36,7 +36,7 @@
                             "child": "right_track_link",
                             "origin": { "xyz": [0.20318559, -0.289888, 0.00242022] }
                         },
-                        "dump_joint": {
+                        "hopper_joint": {
                             "type": "revolute",
                             "parent": "frame_link",
                             "child": "collection_link",
