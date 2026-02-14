@@ -215,6 +215,7 @@ def get_bag_play_action_from_config(bag, config):
 def get_bag_record_action(
         topics : list,
         file_prefix = 'bag_recordings/bag',
+        services = False,
         mcap = True ):
     cmd_args = [
         'ros2', 'bag', 'record',
@@ -226,6 +227,8 @@ def get_bag_record_action(
         cmd_args.extend(topics)
     else:
         cmd_args.append('--all')
+    if services:
+        cmd_args.append('--all-services')
     return ExecuteProcess(
         cmd = cmd_args,
         output = 'screen'
@@ -234,6 +237,7 @@ def get_bag_record_action_from_config(config):
     return get_bag_record_action(
         config.get('topics', None),
         config.get('output_prefix', 'bag_recordings/bag'),
+        config.get('services', False),
         config.get('mcap', True)
     )
 
