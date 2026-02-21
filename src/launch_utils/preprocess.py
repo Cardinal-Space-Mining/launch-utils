@@ -238,12 +238,10 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
 
     config = copy.deepcopy(config)
     config.pop(MARKER_TAG, None)
-
+    constants = config.pop(CONSTANTS_TAG, {})
     overrides = copy.deepcopy(overrides) if overrides else {}
     result = {}
-
-    constants = config.pop(CONSTANTS_TAG, {})
-
+    retry_actions = {}
     for action, block in config.items():
         if not isinstance(block, dict) or action.startswith('pragma:'):
             continue
@@ -260,10 +258,25 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
         if resolved is not None:
             extract_linked_overrides(resolved, overrides)
             resolve_constants(resolved, constants)
-
             result[action] = prune_nulls(resolved)
             print(f"[LAUNCH PREPROC]: Configured action '{action}' with preset '{chosen_preset}'")
         else:
-            print(f"[LAUNCH PREPROC]: Removed action '{action}'")
+            retry_actions[action] = block
+
+    for action, block in retry_actions.items():
+        if action in overrides:
+            override = overrides[action]
+            if does_eval_null(override):
+                override = None
+            elif does_eval_default(override):
+                override = block.get(DEFAULT_TAG)
+            resolved = resolve_preset(block, override)
+            if resolved is not None:
+                resolve_constants(resolved, constants)
+                result[action] = prune_nulls(resolved)
+                print(f"[LAUNCH PREPROC]: Configured action '{action}' with preset '{override}'")
+                continue
+
+        print(f"[LAUNCH PREPROC]: Removed action '{action}'")
 
     return result
