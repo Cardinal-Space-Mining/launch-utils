@@ -40,12 +40,8 @@
 '''
 
 import copy
-import ast
-import math
 import re
-# import traceback
-
-# from collections import defaultdict, deque
+import time
 
 
 # =========================
@@ -233,6 +229,8 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
     """
     Preprocess the launch JSON config.
     """
+    start_t = time.perf_counter()
+
     if not config.get(MARKER_TAG, False):
         return config
 
@@ -278,5 +276,8 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
                 continue
 
         print(f"[LAUNCH PREPROC]: Removed action '{action}'")
+
+    end_t = time.perf_counter()
+    print(f'[LAUNCH PREPROC]: Finished in {((end_t - start_t) * 1000):.1f} milliseconds')
 
     return result
