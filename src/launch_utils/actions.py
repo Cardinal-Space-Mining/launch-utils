@@ -49,7 +49,8 @@ from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
 from launch_ros.actions import Node
 
-sys.path.append(os.path.join(get_package_share_directory('launch_utils'), 'src'))
+sys.path.append(os.path.join(
+    get_package_share_directory('launch_utils'), 'src'))
 from launch_utils.common import flatten_dict
 from launch_utils.tf_converter import json_to_urdf
 
@@ -90,10 +91,10 @@ class NodeAction:
     def config(self):
         return self._config
 
-    def get_option(self, key, default = None):
+    def get_option(self, key, default=None):
         return (self.options[key]
-                    if key in self.options and self.options[key]
-                    else default)
+                if key in self.options and self.options[key]
+                else default)
 
     def get_flattened_params(self) -> dict:
         return flatten_dict(self.config)
@@ -113,10 +114,10 @@ class NodeAction:
             params.extend(kwargs.pop('parameters'))
 
         return Node(
-            package = package,
-            executable = executable,
-            remappings = self.remappings.items(),
-            parameters = [self.get_flattened_params()],
+            package=package,
+            executable=executable,
+            remappings=self.remappings.items(),
+            parameters=[self.get_flattened_params()],
             **{**kwargs, **self.options}
         )
 
@@ -125,27 +126,27 @@ class NodeAction:
 
 def get_fg_bridge_action(config):
     return NodeAction(config).format_node(
-        package= 'foxglove_bridge',
-        executable = 'foxglove_bridge',
-        output = 'screen'
+        package='foxglove_bridge',
+        executable='foxglove_bridge',
+        output='screen'
     )
 
 def get_direct_fg_gui_action(connection):
     return ExecuteProcess(
-        cmd = [
+        cmd=[
             'foxglove-studio',
             '--url',
             f'"foxglove://open?ds=foxglove-websocket&ds.url=ws://{connection}/"'
         ],
-        output = 'screen'
+        output='screen'
     )
 def get_xdg_fg_gui_action(connection):
     return ExecuteProcess(
-        cmd = [
+        cmd=[
             'xdg-open',
             f'foxglove://open?ds=foxglove-websocket&ds.url=ws://{connection}/'
         ],
-        output = 'screen'
+        output='screen'
     )
 def get_fg_gui_action(config):
     connection = config.get('connection', 'localhost:8765')
@@ -156,9 +157,9 @@ def get_fg_gui_action(config):
 
 def get_joy_node_action(config):
     return NodeAction(config).format_node(
-        package = 'joy',
-        executable = 'joy_node',
-        output = 'screen'
+        package='joy',
+        executable='joy_node',
+        output='screen'
     )
 
 def get_robot_state_pub_action(config):
@@ -168,20 +169,20 @@ def get_robot_state_pub_action(config):
     else:
         config['robot_description'] = {}
     return NodeAction(config).format_node(
-        package = 'robot_state_publisher',
-        executable = 'robot_state_publisher',
-        output = 'screen'
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        output='screen'
     )
 
 # ----
 
 def get_bag_play_action(
-        bag : str,
-        topics : list = [],
-        paused : bool = True,
+        bag: str,
+        topics: list = [],
+        paused: bool = True,
         start_time: float = None,
-        loop : bool = False,
-        remappings : dict = {} ):
+        loop: bool = False,
+        remappings: dict = {}):
     cmd_args = ['ros2', 'bag', 'play', '--clock', '10', bag]
     if topics:
         cmd_args.append('--topics')
@@ -199,8 +200,8 @@ def get_bag_play_action(
             cmd_args.append(f'{in_}:={out_}')
 
     return ExecuteProcess(
-        cmd = cmd_args,
-        output = 'screen'
+        cmd=cmd_args,
+        output='screen'
     )
 def get_bag_play_action_from_config(bag, config):
     return get_bag_play_action(
@@ -213,13 +214,13 @@ def get_bag_play_action_from_config(bag, config):
     )
 
 def get_bag_record_action(
-        topics : list,
-        file_prefix = 'bag_recordings/bag',
-        services = False,
-        mcap = True ):
+        topics: list,
+        file_prefix='bag_recordings/bag',
+        services=False,
+        mcap=True):
     cmd_args = [
         'ros2', 'bag', 'record',
-        '-o', f'{file_prefix}_{ datetime.now().strftime("%Y_%m_%d-%H_%M_%S") }' ]
+        '-o', f'{file_prefix}_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}']
     if mcap:
         cmd_args.append('-s')
         cmd_args.append('mcap')
@@ -230,8 +231,8 @@ def get_bag_record_action(
     if services:
         cmd_args.append('--all-services')
     return ExecuteProcess(
-        cmd = cmd_args,
-        output = 'screen'
+        cmd=cmd_args,
+        output='screen'
     )
 def get_bag_record_action_from_config(config):
     return get_bag_record_action(
@@ -242,14 +243,14 @@ def get_bag_record_action_from_config(config):
     )
 
 def get_bag_rerecord_action(
-        src_bag : str,
-        exclude_topics : list = [],
-        mcap = True,
-        bag_name = ''):
+        src_bag: str,
+        exclude_topics: list = [],
+        mcap=True,
+        bag_name=''):
     cmd_args = [
         'ros2', 'bag', 'record', '--all', '--use-sim-time',
         '-o', (bag_name if bag_name else
-                f'{src_bag.rstrip("/")}-rerecord_{ datetime.now().strftime("%Y_%m_%d-%H_%M_%S") }') ]
+               f'{src_bag.rstrip("/")}-rerecord_{datetime.now().strftime("%Y_%m_%d-%H_%M_%S")}')]
     if mcap:
         cmd_args.append('-s')
         cmd_args.append('mcap')
@@ -257,8 +258,8 @@ def get_bag_rerecord_action(
         cmd_args.append('--exclude')
         cmd_args.append('|'.join(exclude_topics))
     return ExecuteProcess(
-        cmd = cmd_args,
-        output = 'screen'
+        cmd=cmd_args,
+        output='screen'
     )
 def get_bag_rerecord_action_from_config(bag, config):
     return get_bag_rerecord_action(
@@ -271,7 +272,7 @@ def get_bag_rerecord_action_from_config(bag, config):
 
 # ---
 
-def get_util_actions(config, launch_args = {}):
+def get_util_actions(config, launch_args={}):
     '''
     Handles starting the following utilities using preset action names and launch args:
     - Foxglove bridge node - requires `foxglove_bridge` config block
@@ -322,15 +323,15 @@ def extract_util_configs(config):
     - `bag_record`
     - `bag_rerecord`
     '''
-    v = { tag: config[tag] for tag in config if tag in
-            [
-                'foxglove_bridge',
-                'foxglove_gui',
-                'joy_node',
-                'robot_tf',
-                'bag_play',
-                'bag_record',
-                'bag_rerecord'
-            ] }
-    for key in v: del config[key]
+    v = {tag: config[tag] for tag in config if tag in
+         ['foxglove_bridge',
+          'foxglove_gui',
+          'joy_node',
+          'robot_tf',
+          'bag_play',
+          'bag_record',
+          'bag_rerecord']
+         }
+    for key in v:
+        del config[key]
     return v

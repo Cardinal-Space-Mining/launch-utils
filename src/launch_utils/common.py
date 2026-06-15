@@ -58,7 +58,7 @@ def does_package_exist(pkg):
     except:
         return False
 
-def try_load_json(json_path, default_json_path = ''):
+def try_load_json(json_path, default_json_path=''):
     '''
     Attempt to load a json if the path is valid, otherwise fallback to the default.
     If both are invalid, or if parsing fails, a `RuntimeError` is thrown.
@@ -68,15 +68,18 @@ def try_load_json(json_path, default_json_path = ''):
             raise RuntimeError('No JSON file provided.')
         json_path = default_json_path
     try:
-        with open(json_path, 'r') as f: json_data = f.read()
+        with open(json_path, 'r') as f:
+            json_data = f.read()
     except Exception as e:
-        raise RuntimeError(f"JSON file '{json_path}' does not exist or could not be read : {e}")
+        raise RuntimeError(
+            f"JSON file '{json_path}' does not exist or could not be read : {e}")
     try:
         return json.loads(json_data), json_path
     except Exception as e:
-        raise RuntimeError(f"Failed to load json data from file '{json_path}' : {e}")
+        raise RuntimeError(
+            f"Failed to load json data from file '{json_path}' : {e}")
 
-def dict_deep_merge_into(primary : dict, secondary : dict):
+def dict_deep_merge_into(primary: dict, secondary: dict):
     for k, v in secondary.items():
         if k not in primary:
             primary[k] = v
@@ -92,7 +95,7 @@ def resolve_json_imports(json_data, json_path):
     real_json_path = os.path.realpath(json_path)
     base_path = os.path.dirname(real_json_path)
     queue = set(json_data.pop(IMPORT_TAG, []))
-    finished = { real_json_path }
+    finished = {real_json_path}
     result = copy.copy(json_data)
     while len(queue):
         dep = queue.pop()
@@ -113,7 +116,7 @@ def resolve_json_imports(json_data, json_path):
 
     return result
 
-def try_load_json_from_args(launch_args, default_json_path = ''):
+def try_load_json_from_args(launch_args, default_json_path=''):
     '''
     Search for `json_data` arg, followed by `json_path` arg via CLI args,
     then finally use a default path parameter. Raises a `RuntimeError` if none of these
@@ -154,7 +157,8 @@ def parse_launch_args(arg_list):
     parsed_dict = {}
     for arg in arg_list:
         if ":=" in arg:
-            key, value = arg.split(":=", 1)  # Split only on the first occurrence
+            # Split only on the first occurrence
+            key, value = arg.split(":=", 1)
             parsed_dict[key.strip()] = value.strip()
     return parsed_dict
 
@@ -207,8 +211,9 @@ def get_mac_from_arp(ip):
         pass
     return None
 
-def get_bag_topic_types(bag : str):
-    topic_pattern = re.compile(r'Topic:\s+(\S+)\s+\|\s+Type:\s+(\S+)')  # "Parse lines like: '/topic_name [msg_type]'"
+def get_bag_topic_types(bag: str):
+    # "Parse lines like: '/topic_name [msg_type]'"
+    topic_pattern = re.compile(r'Topic:\s+(\S+)\s+\|\s+Type:\s+(\S+)')
     output = os.popen(f'ros2 bag info {bag}').read().rstrip()
 
     type_topics = {}

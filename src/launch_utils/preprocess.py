@@ -149,11 +149,13 @@ def resolve_preset(block: dict, preset_name: str, seen=None) -> dict | None:
         return None
 
     if preset_name not in block:
-        raise ValueError(f"Preset '{preset_name}' not found in block {list(block.keys())}")
+        raise ValueError(
+            f"Preset '{preset_name}' not found in block {list(block.keys())}")
 
     seen = seen or set()
     if preset_name in seen:
-        raise ValueError(f"Circular inheritance detected at preset '{preset_name}'")
+        raise ValueError(
+            f"Circular inheritance detected at preset '{preset_name}'")
     seen.add(preset_name)
 
     preset = copy.deepcopy(block[preset_name])
@@ -162,7 +164,8 @@ def resolve_preset(block: dict, preset_name: str, seen=None) -> dict | None:
         parent_name = preset.pop(DERIVED_TAG)
         parent_config = resolve_preset(block, parent_name, seen)
         if parent_config is None:
-            raise ValueError(f"Parent preset '{parent_name}' for '{preset_name}' is null")
+            raise ValueError(
+                f"Parent preset '{parent_name}' for '{preset_name}' is null")
         merged = deep_merge(parent_config, preset)
     else:
         merged = preset
@@ -184,7 +187,8 @@ def extract_linked_overrides(resolved_block: dict, overrides: dict) -> None:
         for k, v in links.items():
             if k not in overrides:
                 overrides[k] = v
-                print(f"[LAUNCH PREPROC]: Added preset override '{v}' for action '{k}'")
+                print(
+                    f"[LAUNCH PREPROC]: Added preset override '{v}' for action '{k}'")
 
 
 # # =========================
@@ -257,7 +261,8 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
             extract_linked_overrides(resolved, overrides)
             resolve_constants(resolved, constants)
             result[action] = prune_nulls(resolved)
-            print(f"[LAUNCH PREPROC]: Configured action '{action}' with preset '{chosen_preset}'")
+            print(
+                f"[LAUNCH PREPROC]: Configured action '{action}' with preset '{chosen_preset}'")
         else:
             retry_actions[action] = block
 
@@ -272,12 +277,14 @@ def preprocess_launch_json(config: dict, overrides: dict = None) -> dict:
             if resolved is not None:
                 resolve_constants(resolved, constants)
                 result[action] = prune_nulls(resolved)
-                print(f"[LAUNCH PREPROC]: Configured action '{action}' with preset '{override}'")
+                print(
+                    f"[LAUNCH PREPROC]: Configured action '{action}' with preset '{override}'")
                 continue
 
         print(f"[LAUNCH PREPROC]: Removed action '{action}'")
 
     end_t = time.perf_counter()
-    print(f'[LAUNCH PREPROC]: Finished in {((end_t - start_t) * 1000):.1f} milliseconds')
+    print(
+        f'[LAUNCH PREPROC]: Finished in {((end_t - start_t) * 1000):.1f} milliseconds')
 
     return result

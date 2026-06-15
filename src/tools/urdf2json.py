@@ -13,8 +13,8 @@ root = tk.Tk()
 root.withdraw()
 
 urdf_file = filedialog.askopenfilename(
-    title = 'Select a file',
-    filetypes = [("URDF files", "*.urdf"), ("All files", "*.*")] )
+    title='Select a file',
+    filetypes=[("URDF files", "*.urdf"), ("All files", "*.*")])
 
 print(f"Attempting to load file '{urdf_file}'")
 

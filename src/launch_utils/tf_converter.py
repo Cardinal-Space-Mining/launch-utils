@@ -124,7 +124,7 @@ class JsonToUrdf:
 
         return joint
 
-def json_to_urdf(json_data : dict):
+def json_to_urdf(json_data: dict):
     root = json_data['robot_description'] if 'robot_description' in json_data else json_data
     if 'name' not in root or 'structure' not in root:
         return ''
@@ -190,7 +190,8 @@ class UrdfToJson:
             inertial["mass"] = float(mass_elem.attrib["value"])
         inertia_elem = elem.find("inertia")
         if inertia_elem is not None:
-            inertial["inertia"] = {k: float(v) for k, v in inertia_elem.attrib.items()}
+            inertial["inertia"] = {k: float(v)
+                                   for k, v in inertia_elem.attrib.items()}
         return inertial
 
     @staticmethod
@@ -245,7 +246,8 @@ class UrdfToJson:
             jdata["limit"] = {k: float(v) for k, v in limit.attrib.items()}
         dynamics = elem.find("dynamics")
         if dynamics is not None:
-            jdata["dynamics"] = {k: float(v) for k, v in dynamics.attrib.items()}
+            jdata["dynamics"] = {k: float(v)
+                                 for k, v in dynamics.attrib.items()}
         return jdata
 
 def urdf_to_json(urdf_path):
@@ -292,4 +294,3 @@ def urdf_to_json(urdf_path):
 #     json_out = urdf_to_json(urdf_file)
 #     with open("robot.json", "w") as f:
 #         json.dump(json_out, f, indent=2)
-

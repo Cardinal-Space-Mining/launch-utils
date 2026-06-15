@@ -380,3 +380,18 @@ The following action blocks are predefined and can be resolved automatically by 
 - `bag_rerecord` : creates a ros2 bag recorder configured for re-recording a bag which is being played
 
 Implementation details can be found in [actions.py](src/launch_utils/actions.py) and usage examples in [test.json](config/test.json)
+
+## Formatting
+In VSCode, install the `autopep8` extension and add the following block to `.vscode/settings.json`:
+```json
+{
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8",
+        "editor.formatOnSave": false,
+    },
+    "autopep8.args": [
+        "--max-line-length", "80",
+        "--ignore", "E302,E303,E402"
+    ]
+}
+```
