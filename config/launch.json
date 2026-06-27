@@ -1,0 +1,10 @@
+{
+    "pragma:enable_preproc": true,
+    "pragma:import":
+    [
+        "actions/bag.json",
+        "actions/foxglove.json",
+        "actions/joy.json",
+        "actions/tf.json"
+    ]
+}

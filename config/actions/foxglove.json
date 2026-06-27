@@ -1,0 +1,43 @@
+{
+    "foxglove_bridge":
+    {
+        "pragma:default": null,
+        "all":
+        {
+            "port": 8765,
+            "address": "0.0.0.0",
+            "tls": false,
+            "certfile": "",
+            "keyfile": "",
+            "topic_whitelist": [ ".*" ],
+            "param_whitelist": [ ".*" ],
+            "service_whitelist": [ ".*" ],
+            "client_topic_whitelist": [ ".*" ],
+            "min_qos_depth": 1,
+            "max_qos_depth": 10,
+            "num_threads": 4,
+            "send_buffer_limit": 5000000000,
+            "capabilities": [
+                "clientPublish",
+                "parameters",
+                "parametersSubscribe",
+                "services",
+                "connectionGraph",
+                "assets"
+            ],
+            "include_hidden": false,
+            "asset_uri_allowlist": [
+                "^package://(?:\\\\w+/)*\\\\w+\\\\.(?:dae|fbx|glb|gltf|jpeg|jpg|mtl|obj|png|stl|tif|tiff|urdf|webp|xacro)$"
+            ]
+        }
+    },
+    "foxglove_gui":
+    {
+        "pragma:default": null,
+        "local":
+        {
+            "connection": "localhost:8765",
+            "use_xdg": true
+        }
+    }
+}

@@ -1,0 +1,206 @@
+{
+    "bag_play":
+    {
+        "pragma:default": "all",
+        "all": {},
+        "lidar":
+        {
+            "topics":
+            [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu"
+            ],
+            "start_paused": true,
+            "loop": false,
+            "remappings": {}
+        },
+        "lidar_with_tf":
+        {
+            "topics":
+            [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+                "/tf",
+                "/tf_static"
+            ]
+        },
+        "rerun_base":
+        {
+            "topics":
+            [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+
+                "/joy",
+                "/lance/watchdog_status",
+                "/lance/relay_status",
+
+                "/lance/track_left/faults",
+                "/lance/track_left/info",
+                "/lance/track_right/faults",
+                "/lance/track_right/info",
+                "/lance/trencher/faults",
+                "/lance/trencher/info",
+                "/lance/hopper_belt/faults",
+                "/lance/hopper_belt/info",
+                "/lance/hopper_act/faults",
+                "/lance/hopper_act/info"
+            ]
+        },
+        "rerun":
+        {
+            "topics":
+            [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+
+                "/joy",
+                "/lance/watchdog_status",
+                "/lance/relay_status",
+
+                "/lance/track_left/faults",
+                "/lance/track_left/info",
+                "/lance/track_right/faults",
+                "/lance/track_right/info",
+                "/lance/trencher/faults",
+                "/lance/trencher/info",
+                "/lance/hopper_belt/faults",
+                "/lance/hopper_belt/info",
+                "/lance/hopper_act/faults",
+                "/lance/hopper_act/info",
+
+                "/lance/telemetry",
+                "/lance/net_latency"
+            ]
+        },
+        "cosmic_bag":
+        {
+            "topics":
+            [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+
+                "/lance/watchdog_status",
+                "/lance/control_level",
+                "/lance/mining_status",
+                "/lance/offload_status",
+                "/lance/hopper_act/info",
+                "/lance/hopper_belt/info",
+                "/lance/track_left/info",
+                "/lance/track_right/info",
+                "/lance/trencher/info"
+            ],
+            "start_paused": true,
+            "start_time": 359.0,
+            "loop": false
+        },
+        "ksc_bag":
+        {
+            "topics":
+            [
+                "/multiscan/lidar_scan"
+            ],
+            "start_paused": true,
+            "start_time": 250.0,
+            "loop": false
+        }
+    },
+    "bag_record":
+    {
+        "pragma:default": null,
+        "sensor_data":
+        {
+            "output_prefix": "bag_recordings/lance_sensor_data",
+            "topics":
+            [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+                "/tf",
+                "/tf_static"
+            ]
+        },
+        "telemetry":
+        {
+            "output_prefix": "bag_recordings/lance_telemetry",
+            "topics":
+            [
+                "/joy",
+                "/lance/watchdog_status",
+                "/lance/op_status",
+                "/lance/relay_status",
+
+                "/lance/track_left/ctrl",
+                "/lance/track_left/faults",
+                "/lance/track_left/info",
+                "/lance/track_right/ctrl",
+                "/lance/track_right/faults",
+                "/lance/track_right/info",
+                "/lance/trencher/ctrl",
+                "/lance/trencher/faults",
+                "/lance/trencher/info",
+                "/lance/hopper_belt/ctrl",
+                "/lance/hopper_belt/faults",
+                "/lance/hopper_belt/info",
+                "/lance/hopper_act/ctrl",
+                "/lance/hopper_act/faults",
+                "/lance/hopper_act/info",
+
+                "/lance/telemetry",
+                "/cardinal_perception/trace_notifications",
+                "/rosout"
+            ]
+        },
+        "all":
+        {
+            "output_prefix": "bag_recordings/lance_all_data",
+            "topics":
+            [
+                "/multiscan/lidar_scan",
+                "/multiscan/imu",
+                "/tf",
+                "/tf_static",
+
+                "/joy",
+                "/lance/watchdog_status",
+                "/lance/op_status",
+                "/lance/relay_status",
+                "/lance/mc_state",
+
+                "/lance/track_left/ctrl",
+                "/lance/track_left/faults",
+                "/lance/track_left/info",
+                "/lance/track_right/ctrl",
+                "/lance/track_right/faults",
+                "/lance/track_right/info",
+                "/lance/trencher/ctrl",
+                "/lance/trencher/faults",
+                "/lance/trencher/info",
+                "/lance/hopper_belt/ctrl",
+                "/lance/hopper_belt/faults",
+                "/lance/hopper_belt/info",
+                "/lance/hopper_act/ctrl",
+                "/lance/hopper_act/faults",
+                "/lance/hopper_act/info",
+
+                "/lance/telemetry",
+                "/lance/net_latency",
+                "/lance/traversal_path",
+                "/lance/markers",
+                "/lance/mc_cursor",
+                "/arena_zones",
+
+                "/cardinal_perception/mining_eval_results",
+                "/cardinal_perception/reflector_hint",
+                "/cardinal_perception/planned_path",
+                "/cardinal_perception/trace_notifications",
+                "/rosout"
+            ],
+            "services": true
+        },
+        "raw":
+        {
+            "output_prefix": "bag_recordings/lance_raw_data",
+            "services": true
+        }
+    }
+}

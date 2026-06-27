@@ -17,7 +17,7 @@ from launch_utils.common import try_load_json_from_args, parse_launch_args
 def launch(context, *args, **kwargs):
     launch_args = parse_launch_args(context.argv)
     json_data = try_load_json_from_args(
-        launch_args, os.path.join(PKG_PATH, 'config', 'test.json'))
+        launch_args, os.path.join(PKG_PATH, 'config', 'launch.json'))
     # print("---------------------------------------------")
     # pprint(json_data)
     # print("---------------------------------------------")
