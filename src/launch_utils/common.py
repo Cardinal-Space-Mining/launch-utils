@@ -100,10 +100,15 @@ def resolve_json_imports(json_data, json_path):
     while len(queue):
         dep = queue.pop()
         full_path = os.path.join(base_path, dep)
-        target = os.path.realpath((
-            full_path if os.path.exists(full_path) else
-            dep if os.path.exists(dep) else
-            None))
+        target = (
+            full_path if os.path.exists(full_path)
+            else dep if os.path.exists(dep)
+            else None
+        )
+        if target:
+            target = os.path.realpath(target)
+        else:
+            raise RuntimeError(f"Import '{dep}' could not be found!")
         if target not in finished:
             try:
                 block, _ = try_load_json(target)
