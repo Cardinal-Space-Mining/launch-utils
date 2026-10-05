@@ -58,6 +58,18 @@ def does_package_exist(pkg):
     except:
         return False
 
+def ros_distro_at_least(distro: str) -> bool:
+    '''
+    Returns true if the active ROS 2 distro (`ROS_DISTRO` env var) is the given
+    distro or newer. Distros are released alphabetically; `rolling` is always newest.
+    '''
+    current = os.environ.get('ROS_DISTRO', '').lower()
+    if not current:
+        return False
+    if current == 'rolling':
+        return True
+    return current >= distro.lower()
+
 def try_load_json(json_path, default_json_path=''):
     '''
     Attempt to load a json if the path is valid, otherwise fallback to the default.

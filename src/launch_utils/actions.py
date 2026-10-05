@@ -51,7 +51,7 @@ from launch_ros.actions import Node
 
 sys.path.append(os.path.join(
     get_package_share_directory('launch_utils'), 'src'))
-from launch_utils.common import flatten_dict
+from launch_utils.common import flatten_dict, ros_distro_at_least
 from launch_utils.tf_converter import json_to_urdf
 
 
@@ -183,7 +183,9 @@ def get_bag_play_action(
         start_time: float = None,
         loop: bool = False,
         remappings: dict = {}):
-    cmd_args = ['ros2', 'bag', 'play', '--clock', '10', bag]
+    cmd_args = ['ros2', 'bag', 'play', '--clock', '10', '--disable-keyboard-controls', bag]
+    if ros_distro_at_least('lyrical'):
+        cmd_args.extend(['--progress-bar-update-rate', '0'])
     if topics:
         cmd_args.append('--topics')
         cmd_args.extend(topics)
