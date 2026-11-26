@@ -227,6 +227,8 @@ def get_bag_record_action(
         cmd_args.append('-s')
         cmd_args.append('mcap')
     if topics:
+        if ros_distro_at_least('lyrical'):
+            cmd_args.append('--topics')
         cmd_args.extend(topics)
     else:
         cmd_args.append('--all')
