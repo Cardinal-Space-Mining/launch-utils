@@ -43,7 +43,7 @@ import os
 import sys
 from datetime import datetime
 
-from ament_index_python.packages import get_package_share_directory
+from ament_index_python.packages import get_package_share_directory, PackageNotFoundError
 
 from launch_ros.actions import Node
 from launch.actions import ExecuteProcess
@@ -159,6 +159,20 @@ def get_joy_node_action(config):
     return NodeAction(config).format_node(
         package='joy',
         executable='joy_node',
+        output='screen'
+    )
+
+def get_profiling_manager_action(config):
+    # csm_metrics is an optional dependency: skip the profiler if it isn't installed
+    try:
+        get_package_share_directory('csm_metrics')
+    except PackageNotFoundError:
+        print("Package 'csm_metrics' not found, skipping the 'profiling_manager' action.")
+        return None
+    return NodeAction(config).format_node(
+        package='csm_metrics',
+        executable='profiling_manager.py',
+        exec_name='profiling_manager',
         output='screen'
     )
 
@@ -282,6 +296,8 @@ def get_util_actions(config, launch_args={}):
     - Foxglove bridge node - requires `foxglove_bridge` config block
     - Foxglove gui - requires `foxglove_gui` config block
     - Ros2 joy node - requires `joy_node` config block
+    - CSM profiling manager - requires `profiling_manager` config block and the
+      (optional) `csm_metrics` package; skipped with a warning if it isn't installed
     - Robot state publisher - requires `robot_tf` config block
     - Ros2 bag player - requires `bag` launch arg and uses `bag_play` config block if present
     - Ros2 bag record - requires `bag_record` config block
@@ -296,6 +312,10 @@ def get_util_actions(config, launch_args={}):
         a.append(get_fg_gui_action(config['foxglove_gui']))
     if 'joy_node' in config:
         a.append(get_joy_node_action(config['joy_node']))
+    if 'profiling_manager' in config:
+        profiling_action = get_profiling_manager_action(config['profiling_manager'])
+        if profiling_action is not None:
+            a.append(profiling_action)
     if 'robot_tf' in config:
         a.append(get_robot_state_pub_action(config['robot_tf']))
     if 'bag' in launch_args:
@@ -322,6 +342,7 @@ def extract_util_configs(config):
     - `foxglove_bridge`
     - `foxglove_gui`
     - `joy_node`
+    - `profiling_manager`
     - `robot_tf`
     - `bag_play`
     - `bag_record`
@@ -331,6 +352,7 @@ def extract_util_configs(config):
          ['foxglove_bridge',
           'foxglove_gui',
           'joy_node',
+          'profiling_manager',
           'robot_tf',
           'bag_play',
           'bag_record',
